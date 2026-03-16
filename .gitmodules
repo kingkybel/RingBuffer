@@ -1,0 +1,6 @@
+[submodule "TypeTraits"]
+	path = TypeTraits
+	url = git@github.com:kingkybel/TypeTraits.git
+[submodule "cmake-common"]
+	path = cmake-common
+	url = git@github.com:kingkybel/CMakeCommon.git

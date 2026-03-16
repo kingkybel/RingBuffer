@@ -1,0 +1,39 @@
+<svg width="1600" height="400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ring Buffer banner">
+  <!-- Background: Deep Magenta -->
+  <rect width="1600" height="400" fill="#6B1E5A"/>
+  
+  <!-- Decorative background elements -->
+  <circle cx="200" cy="400" r="300" fill="#4A143D" fill-opacity="0.3"/>
+  <circle cx="1450" cy="50" r="200" fill="#ffffff" fill-opacity="0.05"/>
+  
+  <!-- Text Content: Bright Yellow -->
+  <g transform="translate(120, 205)">
+    <text font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="700" fill="#FFD700">Ring Buffer</text>
+    <text y="70" font-family="Segoe UI, Arial, sans-serif" font-size="36" fill="#FFE66D">Efficient circular data structures for C++</text>
+  </g>
+  
+  <!-- Right Side Icon: Centered Vertically -->
+  <g transform="translate(1300, 200)">
+    <!-- Background Circle: Muted Magenta -->
+    <circle r="160" fill="#8A2BE2" stroke="#B174F6" stroke-width="4"/>
+    
+    <!-- Circular Buffer Icon: Yellow -->
+    <g id="buffer-icon">
+        <!-- Outer ring -->
+        <circle r="80" fill="none" stroke="#FFD700" stroke-width="12" stroke-linecap="round"/>
+        <!-- Inner ring -->
+        <circle r="50" fill="none" stroke="#FFE66D" stroke-width="8" stroke-linecap="round"/>
+        <!-- Data elements -->
+        <rect x="-60" y="-10" width="20" height="20" fill="#FFD700"/>
+        <rect x="-20" y="-60" width="20" height="20" fill="#FFD700"/>
+        <rect x="20" y="-10" width="20" height="20" fill="#FFD700"/>
+        <rect x="-20" y="40" width="20" height="20" fill="#FFD700"/>
+        <!-- Arrow indicating circular flow -->
+        <path d="M-80,0 A80,80 0 1,1 -79,10" fill="none" stroke="#FFD700" stroke-width="6" stroke-linecap="round"/>
+        <polygon points="-70,20 -85,15 -75,5" fill="#FFD700"/>
+    </g>
+    
+    <!-- Circular pattern decoration -->
+    <circle r="130" fill="none" stroke="#FFE66D" stroke-width="4" stroke-dasharray="10 10" opacity="0.6"/>
+  </g>
+</svg>
