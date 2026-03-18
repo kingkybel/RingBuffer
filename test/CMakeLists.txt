@@ -39,6 +39,7 @@ add_executable(run_tests
 target_link_libraries(run_tests
     GTest::gtest
     GTest::gtest_main
+    DebugTrace
     pthread
 )
 

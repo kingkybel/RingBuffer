@@ -36,13 +36,16 @@
 #include <gtest/gtest.h>
 
 // Include the thread-safe ring buffer implementation
-#include "../include/thread_safe_ring_buffer.h"
+#include "thread_safe_ring_buffer.h"
 
-using namespace ringbuffer;
+// #define DO_TRACE_
+#include <traceutil.h>
+
+using namespace dkyb;
 
 TEST(ThreadSafeRingBufferTest, BasicFunctionality)
 {
-    ThreadSafeRingBuffer<int> buffer(5);
+    ring_buffer_thread_safe<int> buffer(5);
 
     // Test initial state
     EXPECT_TRUE(buffer.empty());
@@ -92,7 +95,7 @@ TEST(ThreadSafeRingBufferTest, BasicFunctionality)
 
 TEST(ThreadSafeRingBufferTest, TryOperations)
 {
-    ThreadSafeRingBuffer<int> buffer(3);
+    ring_buffer_thread_safe<int> buffer(3);
 
     // Test try_push_back when not full
     EXPECT_TRUE(buffer.try_push_back(1));
@@ -122,7 +125,7 @@ TEST(ThreadSafeRingBufferTest, TryOperations)
 
 TEST(ThreadSafeRingBufferTest, TimeoutOperations)
 {
-    ThreadSafeRingBuffer<int> buffer(2);
+    ring_buffer_thread_safe<int> buffer(2);
 
     // Test push_back_with_timeout when buffer is full
     buffer.push_back(1);
@@ -150,10 +153,10 @@ TEST(ThreadSafeRingBufferTest, TimeoutOperations)
 
 TEST(ThreadSafeRingBufferTest, ProducerConsumerScenario)
 {
-    ThreadSafeRingBuffer<int> buffer(10);
-    constexpr int             num_items = 100;
-    std::atomic               produced{0};
-    std::atomic               consumed{0};
+    ring_buffer_thread_safe<int> buffer(10);
+    constexpr int                num_items = 100;
+    std::atomic                  produced{0};
+    std::atomic                  consumed{0};
 
     // Producer function
     auto producer = [&]() {
@@ -202,13 +205,13 @@ TEST(ThreadSafeRingBufferTest, ProducerConsumerScenario)
 
 TEST(ThreadSafeRingBufferTest, MultipleProducersConsumers)
 {
-    ThreadSafeRingBuffer<int> buffer(20);
-    constexpr int             num_threads      = 4;
-    constexpr int             items_per_thread = 50;
-    std::atomic               total_produced{0};
-    std::atomic               total_consumed{0};
-    std::vector<int>          consumed_items;
-    std::mutex                consumed_mutex;
+    ring_buffer_thread_safe<int> buffer(20);
+    constexpr int                num_threads      = 4;
+    constexpr int                items_per_thread = 50;
+    std::atomic                  total_produced{0};
+    std::atomic                  total_consumed{0};
+    std::vector<int>             consumed_items;
+    std::mutex                   consumed_mutex;
 
     std::vector<std::thread> producers;
     std::vector<std::thread> consumers;
@@ -289,7 +292,7 @@ TEST(ThreadSafeRingBufferTest, MultipleProducersConsumers)
 
 TEST(ThreadSafeRingBufferTest, WaitFunctions)
 {
-    ThreadSafeRingBuffer<int> buffer(5);
+    ring_buffer_thread_safe<int> buffer(5);
 
     // Test wait_until_not_empty
     std::thread producer([&]() {
@@ -333,7 +336,7 @@ TEST(ThreadSafeRingBufferTest, WaitFunctions)
 
 TEST(ThreadSafeRingBufferTest, EmplaceFunctionality)
 {
-    ThreadSafeRingBuffer<std::string> buffer(3);
+    ring_buffer_thread_safe<std::string> buffer(3);
 
     // Test emplace_back
     buffer.emplace_back(5, 'x'); // Creates string with 5 'x' characters
@@ -354,7 +357,7 @@ TEST(ThreadSafeRingBufferTest, EmplaceFunctionality)
 
 TEST(ThreadSafeRingBufferTest, ClearAndReset)
 {
-    ThreadSafeRingBuffer<std::string> buffer(5);
+    ring_buffer_thread_safe<std::string> buffer(5);
     buffer.push_back("test1");
     buffer.push_back("test2");
     buffer.push_back("test3");
@@ -377,7 +380,7 @@ TEST(ThreadSafeRingBufferTest, ClearAndReset)
 
 TEST(ThreadSafeRingBufferTest, ConcurrentClear)
 {
-    ThreadSafeRingBuffer<int> buffer(100);
+    ring_buffer_thread_safe<int> buffer(100);
 
     // Fill buffer with data
     for (int i = 0; i < 50; ++i)
@@ -389,9 +392,10 @@ TEST(ThreadSafeRingBufferTest, ConcurrentClear)
     std::atomic<int>  clear_count{0};
 
     // Thread that continuously clears the buffer
-    std::thread clear_thread([&]() {
+    std::jthread clear_thread([&]() {
         while (!stop_flag)
         {
+            TRACE0;
             buffer.clear();
             clear_count++;
             std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -399,20 +403,23 @@ TEST(ThreadSafeRingBufferTest, ConcurrentClear)
     });
 
     // Thread that continuously adds data
-    std::thread add_thread([&]() {
+    std::jthread add_thread([&]() {
+        TRACE0;
         for (int i = 0; i < 1'000; ++i)
         {
             buffer.push_back(i % 100);
             std::this_thread::sleep_for(std::chrono::microseconds(50));
         }
     });
+    TRACE0;
 
     // Let them run for a bit
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
+    // Wait for producers to finish before asking the clearer to stop.
+    add_thread.join();
     stop_flag = true;
     clear_thread.join();
-    add_thread.join();
 
     // Should not crash and should have performed multiple clears
     EXPECT_GT(clear_count, 0);

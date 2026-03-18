@@ -32,11 +32,11 @@
 #include <mutex>
 #include <optional>
 
-namespace ringbuffer
+namespace dkyb
 {
 
 /**
- * @brief Thread-safe wrapper around RingBuffer
+ * @brief Thread-safe wrapper around ring_buffer
  *
  * This class provides thread-safe access to a RingBuffer instance,
  * making it suitable for producer-consumer scenarios and multi-threaded
@@ -45,7 +45,7 @@ namespace ringbuffer
  * @tparam T The type of elements stored in the buffer
  * @tparam Allocator The allocator type
  */
-template <typename T, typename Allocator = std::allocator<T>> class ThreadSafeRingBuffer
+template <typename T, typename Allocator = std::allocator<T>> class ring_buffer_thread_safe
 {
   public:
     using value_type      = T;
@@ -62,7 +62,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ThreadSafeRi
      * @param capacity The maximum number of elements the buffer can hold
      * @param allocator The allocator to use for memory management
      */
-    explicit ThreadSafeRingBuffer(size_type capacity, Allocator const& allocator = Allocator{})
+    explicit ring_buffer_thread_safe(size_type capacity, Allocator const& allocator = Allocator{})
         : buffer_(capacity, allocator)
     {
     }
@@ -128,7 +128,6 @@ template <typename T, typename Allocator = std::allocator<T>> class ThreadSafeRi
         }
         buffer_.push_back(item);
         not_empty_.notify_one();
-        not_full_.notify_one();
         return true;
     }
 
@@ -147,7 +146,6 @@ template <typename T, typename Allocator = std::allocator<T>> class ThreadSafeRi
         }
         buffer_.push_back(std::move(item));
         not_empty_.notify_one();
-        not_full_.notify_one();
         return true;
     }
 
@@ -212,7 +210,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ThreadSafeRi
     T pop_front()
     {
         std::lock_guard lock(mutex_);
-        T                           item = buffer_.pop_front();
+        T               item = buffer_.pop_front();
         not_full_.notify_one();
         return item;
     }
@@ -424,10 +422,10 @@ template <typename T, typename Allocator = std::allocator<T>> class ThreadSafeRi
     }
 
   private:
-    RingBuffer<T, Allocator> buffer_;
-    mutable std::mutex       mutex_;
-    std::condition_variable  not_empty_;
-    std::condition_variable  not_full_;
+    ring_buffer<T, Allocator> buffer_;
+    mutable std::mutex        mutex_;
+    std::condition_variable   not_empty_;
+    std::condition_variable   not_full_;
 };
 
-} // namespace ringbuffer
+} // namespace dkyb

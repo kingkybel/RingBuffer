@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/cmake-build-debug/Debug/bin/run_tests",
             "args": [
-                // "--gtest_filter=ThreadSafeRingBufferTest.ProducerConsumerScenario"
+                "--gtest_filter=ThreadSafeRingBufferTest.ConcurrentClear"
             ],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build run_tests",

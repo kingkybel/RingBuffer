@@ -1,7 +1,8 @@
 /*
  * Repository:  https://github.com/kingkybel/RingBuffer
  * File Name:   include/ring_buffer.h
- * Description: A ring buffer (also known as circular buffer or circular queue) is a data structure that uses a single, fixed-size buffer as if it were connected end-to-end.
+ * Description: A ring buffer (also known as circular buffer or circular queue) is a data structure that uses a single,
+ * fixed-size buffer as if it were connected end-to-end.
  *
  * Copyright (C) 2026 Dieter J Kybelksties
  *
@@ -30,7 +31,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace ringbuffer
+namespace dkyb
 {
 
 /**
@@ -43,7 +44,7 @@ namespace ringbuffer
  * @tparam T The type of elements stored in the buffer
  * @tparam Allocator The allocator type (defaults to std::allocator<T>)
  */
-template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
+template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
 {
   public:
     using value_type      = T;
@@ -74,7 +75,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
         {
         }
 
-        iterator(RingBuffer* buffer, size_type index)
+        iterator(ring_buffer* buffer, size_type index)
             : buffer_(buffer)
             , index_(index)
             , size_(buffer->size())
@@ -115,9 +116,9 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
         }
 
       private:
-        RingBuffer* buffer_;
-        size_type   index_;
-        size_type   size_;
+        ring_buffer* buffer_;
+        size_type    index_;
+        size_type    size_;
     };
 
     /**
@@ -139,7 +140,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
         {
         }
 
-        const_iterator(RingBuffer const* buffer, size_type index)
+        const_iterator(ring_buffer const* buffer, size_type index)
             : buffer_(buffer)
             , index_(index)
             , size_(buffer->size())
@@ -187,9 +188,9 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
         }
 
       private:
-        RingBuffer const* buffer_;
-        size_type         index_;
-        size_type         size_;
+        ring_buffer const* buffer_;
+        size_type          index_;
+        size_type          size_;
     };
 
     /**
@@ -198,7 +199,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
      * @param capacity The maximum number of elements the buffer can hold
      * @param allocator The allocator to use for memory management
      */
-    explicit RingBuffer(size_type capacity, Allocator const& allocator = Allocator{})
+    explicit ring_buffer(size_type capacity, Allocator const& allocator = Allocator{})
         : capacity_(capacity)
         , allocator_(allocator)
         , buffer_(allocator_.allocate(capacity_))
@@ -219,7 +220,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     /**
      * @brief Copy constructor
      */
-    RingBuffer(RingBuffer const& other)
+    ring_buffer(ring_buffer const& other)
         : capacity_(other.capacity_)
         , allocator_(std::allocator_traits<Allocator>::select_on_container_copy_construction(other.allocator_))
         , buffer_(allocator_.allocate(capacity_))
@@ -240,7 +241,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     /**
      * @brief Move constructor
      */
-    RingBuffer(RingBuffer&& other) noexcept
+    ring_buffer(ring_buffer&& other) noexcept
         : capacity_(other.capacity_)
         , allocator_(std::move(other.allocator_))
         , buffer_(other.buffer_)
@@ -262,7 +263,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     /**
      * @brief Copy assignment operator
      */
-    RingBuffer& operator=(RingBuffer const& other)
+    ring_buffer& operator=(ring_buffer const& other)
     {
         if (this != &other)
         {
@@ -302,7 +303,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     /**
      * @brief Move assignment operator
      */
-    RingBuffer& operator=(RingBuffer&& other) noexcept
+    ring_buffer& operator=(ring_buffer&& other) noexcept
     {
         if (this != &other)
         {
@@ -338,7 +339,7 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     /**
      * @brief Destructor
      */
-    ~RingBuffer()
+    ~ring_buffer()
     {
         clear();
         if (buffer_)
@@ -685,7 +686,8 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
         {
             std::cout << buffer_[i] << " ";
         }
-        std::cout << " | head=" << head_ << " tail=" << tail_ << " count=" << count_ << " full=" << full_ << " just_overwrote=" << just_overwrote_ << std::endl;
+        std::cout << " | head=" << head_ << " tail=" << tail_ << " count=" << count_ << " full=" << full_
+                  << " just_overwrote=" << just_overwrote_ << std::endl;
     }
 
   private:
@@ -714,8 +716,8 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     {
         // Store the position where we wrote the element
         overwrite_position_ = head_;
-        head_ = (head_ + 1) % capacity_;
-        just_overwrote_ = true;
+        head_               = (head_ + 1) % capacity_;
+        just_overwrote_     = true;
         // Buffer remains full after overwriting
     }
 
@@ -752,4 +754,4 @@ template <typename T, typename Allocator = std::allocator<T>> class RingBuffer
     size_type overwrite_position_;
 };
 
-} // namespace ringbuffer
+} // namespace dkyb

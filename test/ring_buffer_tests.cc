@@ -33,13 +33,13 @@
 #include <gtest/gtest.h>
 
 // Include the ring buffer implementation
-#include "../include/ring_buffer.h"
+#include "ring_buffer.h"
 
-using namespace ringbuffer;
+using namespace dkyb;
 
 TEST(RingBufferTest, BasicFunctionality)
 {
-    RingBuffer<int> buffer(5);
+    ring_buffer<int> buffer(5);
 
     // Test initial state
     EXPECT_TRUE(buffer.empty());
@@ -90,27 +90,27 @@ TEST(RingBufferTest, BasicFunctionality)
 TEST(RingBufferTest, CopyAndMoveSemantics)
 {
     // Test copy constructor
-    RingBuffer<std::string> original(3);
+    ring_buffer<std::string> original(3);
     original.push_back("hello");
     original.push_back("world");
 
-    RingBuffer<std::string> copy(original);
+    ring_buffer<std::string> copy(original);
     EXPECT_EQ(copy.size(), 2);
     EXPECT_EQ(copy.front(), "hello");
     EXPECT_EQ(copy.back(), "world");
 
     // Test move constructor
-    RingBuffer<std::string> moved(std::move(copy));
+    ring_buffer<std::string> moved(std::move(copy));
     EXPECT_EQ(moved.size(), 2);
     EXPECT_EQ(moved.front(), "hello");
     EXPECT_EQ(moved.back(), "world");
     EXPECT_EQ(copy.size(), 0); // Original should be empty after move
 
     // Test copy assignment
-    RingBuffer<std::string> buffer1(3);
+    ring_buffer<std::string> buffer1(3);
     buffer1.push_back("test1");
 
-    RingBuffer<std::string> buffer2(5);
+    ring_buffer<std::string> buffer2(5);
     buffer2.push_back("test2");
     buffer2.push_back("test3");
 
@@ -120,10 +120,10 @@ TEST(RingBufferTest, CopyAndMoveSemantics)
     EXPECT_EQ(buffer1.back(), "test3");
 
     // Test move assignment
-    RingBuffer<std::string> buffer3(4);
+    ring_buffer<std::string> buffer3(4);
     buffer3.push_back("test4");
 
-    RingBuffer<std::string> buffer4(6);
+    ring_buffer<std::string> buffer4(6);
     buffer4.push_back("test5");
     buffer4.push_back("test6");
 
@@ -136,7 +136,7 @@ TEST(RingBufferTest, CopyAndMoveSemantics)
 
 TEST(RingBufferTest, IteratorFunctionality)
 {
-    RingBuffer<int> buffer(5);
+    ring_buffer<int> buffer(5);
     buffer.push_back(10);
     buffer.push_back(20);
     buffer.push_back(30);
@@ -176,7 +176,7 @@ TEST(RingBufferTest, IteratorFunctionality)
 
 TEST(RingBufferTest, EmplaceFunctionality)
 {
-    RingBuffer<std::string> buffer(3);
+    ring_buffer<std::string> buffer(3);
 
     // Test emplace_back
     buffer.emplace_back(5, 'x'); // Creates string with 5 'x' characters
@@ -197,7 +197,7 @@ TEST(RingBufferTest, EmplaceFunctionality)
 
 TEST(RingBufferTest, ErrorConditions)
 {
-    RingBuffer<int> buffer(3);
+    ring_buffer<int> buffer(3);
 
     // Test accessing empty buffer
     EXPECT_TRUE(buffer.empty());
@@ -213,7 +213,7 @@ TEST(RingBufferTest, ErrorConditions)
 
 TEST(RingBufferTest, ClearFunctionality)
 {
-    RingBuffer<std::string> buffer(5);
+    ring_buffer<std::string> buffer(5);
     buffer.push_back("test1");
     buffer.push_back("test2");
     buffer.push_back("test3");
@@ -237,7 +237,7 @@ TEST(RingBufferTest, ClearFunctionality)
 TEST(RingBufferTest, PerformanceCharacteristics)
 {
     constexpr size_t capacity = 10'000;
-    RingBuffer<int> buffer(capacity);
+    ring_buffer<int> buffer(capacity);
 
     // Test that operations are O(1)
     auto const start = std::chrono::high_resolution_clock::now();
@@ -265,7 +265,7 @@ TEST(RingBufferTest, PerformanceCharacteristics)
 TEST(RingBufferTest, CustomAllocator)
 {
     // Use std::allocator as a simple custom allocator test
-    RingBuffer<int, std::allocator<int>> buffer(5, std::allocator<int>());
+    ring_buffer<int, std::allocator<int>> buffer(5, std::allocator<int>());
 
     buffer.push_back(1);
     buffer.push_back(2);
@@ -279,7 +279,7 @@ TEST(RingBufferTest, CustomAllocator)
 TEST(RingBufferTest, EdgeCases)
 {
     // Test single element buffer
-    RingBuffer<int> single(1);
+    ring_buffer<int> single(1);
     EXPECT_EQ(single.capacity(), 1);
     EXPECT_TRUE(single.empty());
 
@@ -293,7 +293,7 @@ TEST(RingBufferTest, EdgeCases)
     EXPECT_EQ(single.back(), 99);
 
     // Test buffer that gets completely overwritten
-    RingBuffer<int> small(2);
+    ring_buffer<int> small(2);
     small.push_back(1);
     small.push_back(2);
     small.push_back(3); // Overwrites 1

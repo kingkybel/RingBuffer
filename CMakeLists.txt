@@ -60,6 +60,7 @@ link_directories(
 )
 
 
+add_subdirectory(DebugTrace)
 add_subdirectory(test)
 add_subdirectory(examples)
 

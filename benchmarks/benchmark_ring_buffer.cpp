@@ -32,10 +32,10 @@
 #include <atomic>
 
 // Include the ring buffer implementations
-#include "../src/ring_buffer.hpp"
-#include "../src/thread_safe_ring_buffer.hpp"
+#include "ring_buffer.hpp"
+#include "thread_safe_ring_buffer.hpp"
 
-using namespace ringbuffer;
+using namespace dkyb;
 
 template<typename T>
 class BenchmarkSuite {

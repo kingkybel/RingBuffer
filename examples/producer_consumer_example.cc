@@ -34,7 +34,7 @@
 // Include the thread-safe ring buffer implementation
 #include "../include/thread_safe_ring_buffer.h"
 
-using namespace ringbuffer;
+using namespace dkyb;
 
 /**
  * @brief Producer-Consumer example demonstrating multi-threaded data processing
@@ -65,11 +65,11 @@ class ProducerConsumerExample
     static constexpr int    NUM_CONSUMERS      = 2;
     static constexpr int    ITEMS_PER_PRODUCER = 1'000;
 
-    ThreadSafeRingBuffer<DataPacket> buffer_;
-    std::atomic<bool>                stop_flag_{false};
-    std::atomic<int>                 total_produced_{0};
-    std::atomic<int>                 total_consumed_{0};
-    std::atomic<long long>           processing_time_ns_{0};
+    ring_buffer_thread_safe<DataPacket> buffer_;
+    std::atomic<bool>                   stop_flag_{false};
+    std::atomic<int>                    total_produced_{0};
+    std::atomic<int>                    total_consumed_{0};
+    std::atomic<long long>              processing_time_ns_{0};
 
   public:
     ProducerConsumerExample()
@@ -141,8 +141,8 @@ class ProducerConsumerExample
                 auto start_time = std::chrono::steady_clock::now();
 
                 // Simple processing: calculate some derived values
-                [[maybe_unused]]double processed_value = packet.value * 1.5 + 10.0;
-                [[maybe_unused]]int    checksum        = packet.id ^ static_cast<int>(packet.value);
+                [[maybe_unused]] double processed_value = packet.value * 1.5 + 10.0;
+                [[maybe_unused]] int    checksum        = packet.id ^ static_cast<int>(packet.value);
 
                 // Simulate variable processing time
                 std::this_thread::sleep_for(std::chrono::microseconds(delay_dist(gen) * 200));
@@ -289,10 +289,10 @@ void demonstrate_priority_processing()
 {
     std::cout << "\n=== Priority-Based Processing Example ===" << std::endl;
 
-    ThreadSafeRingBuffer<DataPacket> priority_buffer(100);
-    std::atomic<bool>                priority_stop{false};
-    std::atomic<int>                 high_priority_count{0};
-    std::atomic<int>                 low_priority_count{0};
+    ring_buffer_thread_safe<DataPacket> priority_buffer(100);
+    std::atomic<bool>                   priority_stop{false};
+    std::atomic<int>                    high_priority_count{0};
+    std::atomic<int>                    low_priority_count{0};
 
     // High priority producer
     std::thread high_priority_producer([&]() {

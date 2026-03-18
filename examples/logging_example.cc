@@ -35,9 +35,9 @@
 #include <vector>
 
 // Include the ring buffer implementation
-#include "../include/ring_buffer.h"
+#include "ring_buffer.h"
 
-using namespace ringbuffer;
+using namespace dkyb;
 
 /**
  * @brief Log entry structure for the circular logging system
@@ -116,10 +116,10 @@ class CircularLogger
   private:
     static constexpr size_t DEFAULT_BUFFER_SIZE = 1'000;
 
-    RingBuffer<LogEntry> log_buffer_;
-    std::atomic<bool>    enabled_{true};
-    std::string          log_file_;
-    bool                 write_to_file_;
+    ring_buffer<LogEntry> log_buffer_;
+    std::atomic<bool>     enabled_{true};
+    std::string           log_file_;
+    bool                  write_to_file_;
 
     std::string level_color(LogEntry::Level level) const
     {

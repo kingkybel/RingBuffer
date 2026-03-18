@@ -31,9 +31,9 @@
 #include <vector>
 
 // Include the ring buffer implementation
-#include "../include/ring_buffer.h"
+#include "ring_buffer.h"
 
-using namespace ringbuffer;
+using namespace dkyb;
 
 /**
  * @brief Audio buffer example demonstrating real-time audio processing
@@ -49,7 +49,7 @@ class AudioBufferExample
     static constexpr size_t SAMPLE_RATE = 48'000; // Samples per second
     static constexpr size_t CHUNK_SIZE  = 512;    // Samples per chunk
 
-    RingBuffer<float>                     audio_buffer_;
+    ring_buffer<float>                    audio_buffer_;
     std::mt19937                          rng_;
     std::uniform_real_distribution<float> dist_;
 
@@ -260,7 +260,7 @@ void demonstrate_audio_analysis()
 {
     std::cout << "\n=== Audio Analysis Example ===" << std::endl;
 
-    RingBuffer<float> analysis_buffer(256);
+    ring_buffer<float> analysis_buffer(256);
 
     // Simulate audio analysis over time
     std::mt19937                    rng(std::random_device{}());
