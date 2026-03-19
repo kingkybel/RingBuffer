@@ -28,6 +28,10 @@ project(RingBuffer
         DESCRIPTION "A header only for conversion of standard containers"
         HOMEPAGE_URL "https://github.com/kingkybel/RingBuffer")
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 include(GNUInstallDirs)
 include(CTest)
 enable_testing()

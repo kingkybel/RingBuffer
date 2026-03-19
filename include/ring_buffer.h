@@ -27,6 +27,7 @@
 #pragma once
 
 #include <cstddef>
+#include <format>
 #include <iterator>
 #include <memory>
 #include <stdexcept>
