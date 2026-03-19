@@ -33,6 +33,10 @@
 
 namespace dkyb
 {
+struct ring_buffer_exception : public std::runtime_error
+{
+    using std::runtime_error::runtime_error;
+};
 
 /**
  * @brief A fixed-size circular buffer implementation
@@ -110,11 +114,6 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
             return buffer_ == other.buffer_ && index_ == other.index_;
         }
 
-        bool operator!=(iterator const& other) const
-        {
-            return !(*this == other);
-        }
-
       private:
         ring_buffer* buffer_;
         size_type    index_;
@@ -180,11 +179,6 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
         bool operator==(const_iterator const& other) const
         {
             return buffer_ == other.buffer_ && index_ == other.index_;
-        }
-
-        bool operator!=(const_iterator const& other) const
-        {
-            return !(*this == other);
         }
 
       private:
@@ -430,7 +424,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
     {
         if (empty())
         {
-            throw std::runtime_error("Cannot pop from empty ring buffer");
+            throw ring_buffer_exception("Cannot pop from empty ring buffer");
         }
 
         T item = std::move(buffer_[head_]);
@@ -450,7 +444,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
     {
         if (empty())
         {
-            throw std::runtime_error("Cannot access front of empty ring buffer");
+            throw ring_buffer_exception("Cannot access front of empty ring buffer");
         }
         return buffer_[head_];
     }
@@ -465,7 +459,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
     {
         if (empty())
         {
-            throw std::runtime_error("Cannot access front of empty ring buffer");
+            throw ring_buffer_exception("Cannot access front of empty ring buffer");
         }
         return buffer_[head_];
     }
@@ -480,7 +474,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
     {
         if (empty())
         {
-            throw std::runtime_error("Cannot access back of empty ring buffer");
+            throw ring_buffer_exception("Cannot access back of empty ring buffer");
         }
         if (just_overwrote_)
         {
@@ -504,7 +498,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
     {
         if (empty())
         {
-            throw std::runtime_error("Cannot access back of empty ring buffer");
+            throw ring_buffer_exception("Cannot access back of empty ring buffer");
         }
         if (just_overwrote_)
         {
@@ -743,15 +737,15 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
         return index == 0 ? capacity_ - 1 : index - 1;
     }
 
-    size_type capacity_;
-    Allocator allocator_;
-    pointer   buffer_;
-    size_type head_;
-    size_type tail_;
-    size_type count_;
-    bool      full_;
-    bool      just_overwrote_;
-    size_type overwrite_position_;
+    size_type capacity_{};
+    Allocator allocator_{};
+    pointer   buffer_{};
+    size_type head_{};
+    size_type tail_{};
+    size_type count_{};
+    bool      full_{};
+    bool      just_overwrote_{};
+    size_type overwrite_position_{};
 };
 
 } // namespace dkyb

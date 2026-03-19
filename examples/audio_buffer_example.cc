@@ -49,17 +49,12 @@ class AudioBufferExample
     static constexpr size_t SAMPLE_RATE = 48'000; // Samples per second
     static constexpr size_t CHUNK_SIZE  = 512;    // Samples per chunk
 
-    ring_buffer<float>                    audio_buffer_;
-    std::mt19937                          rng_;
-    std::uniform_real_distribution<float> dist_;
+    ring_buffer<float>                    audio_buffer_{BUFFER_SIZE};
+    std::mt19937                          rng_{std::random_device{}()};
+    std::uniform_real_distribution<float> dist_{-1.0f, 1.0f};
 
   public:
-    AudioBufferExample()
-        : audio_buffer_(BUFFER_SIZE)
-        , rng_(std::random_device{}())
-        , dist_(-1.0f, 1.0f)
-    {
-    }
+    AudioBufferExample() = default;
 
     /**
      * @brief Simulate audio sample generation
@@ -74,7 +69,7 @@ class AudioBufferExample
         // Generate some audio data (sine wave with noise)
         static float phase     = 0.0f;
         float const  frequency = 440.0f; // A4 note
-        float const  two_pi    = 2.0f * 3.14159f;
+        float const  two_pi    = 2.0f * std::numbers::pi_v<float>;
 
         for (size_t i = 0; i < CHUNK_SIZE; ++i)
         {
@@ -175,22 +170,20 @@ class AudioBufferExample
         size_t const capacity     = audio_buffer_.capacity();
         float const  utilization  = static_cast<float>(current_size) / static_cast<float>(capacity) * 100.0f;
 
-        std::cout << "Audio Buffer Status: " << current_size << "/" << capacity << " (" << std::fixed
-                  << std::setprecision(1) << utilization << "%)";
-
+        std::println(std::cout, "Audio Buffer Status: {}/{} ({}%)", current_size, capacity, utilization);
         if (utilization > 90.0f)
         {
-            std::cout << " ⚠️  WARNING: Buffer nearly full!";
+            std::println(std::cout, " ⚠️  WARNING: Buffer nearly full!");
         }
         else if (utilization < 10.0f)
         {
-            std::cout << " ⚠️  WARNING: Buffer nearly empty!";
+            std::println(std::cout, " ⚠️  WARNING: Buffer nearly empty!");
         }
         else
         {
-            std::cout << " ✓";
+            std::println(std::cout, " ✓");
         }
-        std::cout << std::endl;
+        std::println(std::cout, "");
     }
 
     /**
@@ -198,17 +191,17 @@ class AudioBufferExample
      */
     void run_simulation()
     {
-        std::cout << "=== Audio Buffer Simulation ===" << std::endl;
-        std::cout << "Buffer Size: " << BUFFER_SIZE << " samples" << std::endl;
-        std::cout << "Sample Rate: " << SAMPLE_RATE << " Hz" << std::endl;
-        std::cout << "Chunk Size: " << CHUNK_SIZE << " samples" << std::endl;
-        std::cout << "===============================" << std::endl;
+        std::println(std::cout, "=== Audio Buffer Simulation ===");
+        std::println(std::cout, "Buffer Size:{} samples", BUFFER_SIZE);
+        std::println(std::cout, "Sample Rate: {} Hz", SAMPLE_RATE);
+        std::println(std::cout, "Chunk Size: {} samples", CHUNK_SIZE);
+        std::println(std::cout, "===============================");
 
         int const simulation_steps = 20;
 
         for (int step = 0; step < simulation_steps; ++step)
         {
-            std::cout << "\nStep " << (step + 1) << "/" << simulation_steps << ":" << std::endl;
+            std::println(std::cout, "\nStep {}/{}:", step + 1, simulation_steps);
 
             // Simulate variable load by sometimes generating more/less audio
             int generation_factor = 1;
@@ -248,8 +241,8 @@ class AudioBufferExample
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        std::cout << "\n=== Simulation Complete ===" << std::endl;
-        std::cout << "Final buffer state: " << audio_buffer_.size() << "/" << audio_buffer_.capacity() << std::endl;
+        std::println(std::cout, "\n=== Simulation Complete ===");
+        std::println(std::cout, "Final buffer state: {}/{}", audio_buffer_.size(), audio_buffer_.capacity());
     }
 };
 
@@ -258,7 +251,7 @@ class AudioBufferExample
  */
 void demonstrate_audio_analysis()
 {
-    std::cout << "\n=== Audio Analysis Example ===" << std::endl;
+    std::println(std::cout, "\n=== Audio Analysis Example ===");
 
     ring_buffer<float> analysis_buffer(256);
 
@@ -292,8 +285,14 @@ void demonstrate_audio_analysis()
             float       variance = (sum_sq / static_cast<float>(count)) - (mean * mean);
             float const rms      = std::sqrt(std::max(0.0f, variance));
 
-            std::cout << "Analysis Window " << (i + 1) << ": " << "Mean=" << std::fixed << std::setprecision(3) << mean
-                      << ", RMS=" << rms << ", Buffer=" << analysis_buffer.size() << std::endl;
+            std::println(
+                std::cout,
+                "Analysis Window {}: Mean={}, RMS={}, Buffer={}",
+                i + 1,
+                mean,
+                rms,
+                analysis_buffer.size()
+            );
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -302,8 +301,8 @@ void demonstrate_audio_analysis()
 
 int main()
 {
-    std::cout << "Ring Buffer Audio Processing Examples" << std::endl;
-    std::cout << "=====================================" << std::endl;
+    std::println(std::cout, "Ring Buffer Audio Processing Examples");
+    std::println(std::cout, "=====================================");
 
     try
     {
@@ -314,12 +313,12 @@ int main()
         // Demonstrate audio analysis
         demonstrate_audio_analysis();
 
-        std::cout << "\n=====================================" << std::endl;
-        std::cout << "Audio examples completed successfully!" << std::endl;
+        std::println(std::cout, "\n=====================================");
+        std::println(std::cout, "Audio examples completed successfully!");
     }
     catch (std::exception const& e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::println(std::cerr, "Error: {}", e.what());
         return 1;
     }
 

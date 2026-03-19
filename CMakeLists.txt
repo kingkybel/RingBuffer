@@ -63,6 +63,7 @@ link_directories(
 add_subdirectory(DebugTrace)
 add_subdirectory(test)
 add_subdirectory(examples)
+add_subdirectory(benchmarks)
 
 set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=* -p ${CMAKE_SOURCE_DIR}/build")
 

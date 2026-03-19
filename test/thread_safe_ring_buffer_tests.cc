@@ -159,7 +159,7 @@ TEST(ThreadSafeRingBufferTest, ProducerConsumerScenario)
     std::atomic                  consumed{0};
 
     // Producer function
-    auto producer = [&]() {
+    auto producer = [&buffer, &produced]() {
         for (int i = 0; i < num_items; ++i)
         {
             buffer.push_back(i);
@@ -169,7 +169,7 @@ TEST(ThreadSafeRingBufferTest, ProducerConsumerScenario)
     };
 
     // Consumer function
-    auto consumer = [&]() {
+    auto consumer = [&buffer, &consumed, num_items]() { // NOSONAR S1481: num_items needs to be captured
         while (consumed < num_items)
         {
             try
@@ -181,7 +181,7 @@ TEST(ThreadSafeRingBufferTest, ProducerConsumerScenario)
                 EXPECT_GE(item, 0);
                 EXPECT_LT(item, num_items);
             }
-            catch (std::runtime_error const& e)
+            catch (ring_buffer_exception const& e)
             {
                 // Buffer might be empty temporarily, but this shouldn't happen
                 // in a proper producer-consumer scenario
@@ -192,8 +192,8 @@ TEST(ThreadSafeRingBufferTest, ProducerConsumerScenario)
     };
 
     // Start producer and consumer threads
-    std::thread producer_thread(producer);
-    std::thread consumer_thread(consumer);
+    std::jthread producer_thread(producer);
+    std::jthread consumer_thread(consumer);
 
     // Wait for completion
     producer_thread.join();
@@ -213,13 +213,13 @@ TEST(ThreadSafeRingBufferTest, MultipleProducersConsumers)
     std::vector<int>             consumed_items;
     std::mutex                   consumed_mutex;
 
-    std::vector<std::thread> producers;
-    std::vector<std::thread> consumers;
+    std::vector<std::jthread> producers;
+    std::vector<std::jthread> consumers;
 
     // Create producer threads
     for (int t = 0; t < num_threads; ++t)
     {
-        producers.emplace_back([&, t]() {
+        producers.emplace_back([&buffer, &total_produced, t]() {
             for (int i = 0; i < items_per_thread; ++i)
             {
                 buffer.push_back(t * 1'000 + i);
@@ -231,7 +231,7 @@ TEST(ThreadSafeRingBufferTest, MultipleProducersConsumers)
     // Create consumer threads
     for (int t = 0; t < num_threads; ++t)
     {
-        consumers.emplace_back([&]() {
+        consumers.emplace_back([&buffer, &total_consumed, &consumed_mutex, &consumed_items]() {
             while (total_consumed < num_threads * items_per_thread)
             {
                 // Use pop_front() instead of try_pop_front() to avoid race conditions
@@ -245,7 +245,7 @@ TEST(ThreadSafeRingBufferTest, MultipleProducersConsumers)
                     }
                     ++total_consumed;
                 }
-                catch (std::runtime_error const&)
+                catch (ring_buffer_exception const&)
                 {
                     // Buffer might be empty temporarily, retry
                     std::this_thread::sleep_for(std::chrono::microseconds(10));
@@ -295,7 +295,7 @@ TEST(ThreadSafeRingBufferTest, WaitFunctions)
     ring_buffer_thread_safe<int> buffer(5);
 
     // Test wait_until_not_empty
-    std::thread producer([&]() {
+    std::jthread producer([&buffer]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         buffer.push_back(42);
     });
@@ -318,7 +318,7 @@ TEST(ThreadSafeRingBufferTest, WaitFunctions)
         buffer.push_back(i);
     }
 
-    std::thread consumer([&]() {
+    std::jthread consumer([&buffer]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         buffer.pop_front();
     });
@@ -392,7 +392,7 @@ TEST(ThreadSafeRingBufferTest, ConcurrentClear)
     std::atomic<int>  clear_count{0};
 
     // Thread that continuously clears the buffer
-    std::jthread clear_thread([&]() {
+    std::jthread clear_thread([&buffer, &clear_count, &stop_flag]() {
         while (!stop_flag)
         {
             TRACE0;
@@ -403,7 +403,7 @@ TEST(ThreadSafeRingBufferTest, ConcurrentClear)
     });
 
     // Thread that continuously adds data
-    std::jthread add_thread([&]() {
+    std::jthread add_thread([&buffer]() {
         TRACE0;
         for (int i = 0; i < 1'000; ++i)
         {

@@ -245,7 +245,7 @@ TEST(RingBufferTest, PerformanceCharacteristics)
     // Fill buffer
     for (size_t i = 0; i < capacity; ++i)
     {
-        buffer.push_back(i);
+        buffer.push_back(static_cast<int>(i));
     }
 
     // Perform many operations

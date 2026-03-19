@@ -53,14 +53,13 @@ struct LogEntry
         CRITICAL
     };
 
-    std::chrono::steady_clock::time_point timestamp;
+    std::chrono::steady_clock::time_point timestamp{std::chrono::steady_clock::now()};
     Level                                 level;
     std::string                           message;
     std::string                           source;
 
     LogEntry(Level level, std::string const& message, std::string const& source = "")
-        : timestamp(std::chrono::steady_clock::now())
-        , level(level)
+        : level(level)
         , message(message)
         , source(source)
     {
@@ -70,15 +69,16 @@ struct LogEntry
     {
         switch (level)
         {
-            case Level::DEBUG:
+            using enum Level;
+            case DEBUG:
                 return "DEBUG";
-            case Level::INFO:
+            case INFO:
                 return "INFO";
-            case Level::WARNING:
+            case WARNING:
                 return "WARNING";
-            case Level::ERROR:
+            case ERROR:
                 return "ERROR";
-            case Level::CRITICAL:
+            case CRITICAL:
                 return "CRITICAL";
             default:
                 return "UNKNOWN";
@@ -125,24 +125,25 @@ class CircularLogger
     {
         switch (level)
         {
-            case LogEntry::Level::DEBUG:
-                return "\033[36m"; // Cyan
-            case LogEntry::Level::INFO:
-                return "\033[32m"; // Green
-            case LogEntry::Level::WARNING:
-                return "\033[33m"; // Yellow
-            case LogEntry::Level::ERROR:
-                return "\033[31m"; // Red
-            case LogEntry::Level::CRITICAL:
-                return "\033[35m"; // Magenta
+            using enum LogEntry::Level;
+            case DEBUG:
+                return "\o{33}[36m"; // Cyan
+            case INFO:
+                return "\o{33}[32m"; // Green
+            case WARNING:
+                return "\o{33}[33m"; // Yellow
+            case ERROR:
+                return "\o{33}[31m"; // Red
+            case CRITICAL:
+                return "\o{33}[35m"; // Magenta
             default:
-                return "\033[0m"; // Reset
+                return "\o{33}[0m"; // Reset
         }
     }
 
     std::string reset_color() const
     {
-        return "\033[0m";
+        return "\o{33}[0m";
     }
 
   public:
@@ -251,7 +252,8 @@ class CircularLogger
         size_t count = 0;
         for (auto const& entry: log_buffer_)
         {
-            std::cout << "[" << count++ << "] " << entry.to_string() << std::endl;
+            std::cout << "[" << count << "] " << entry.to_string() << std::endl;
+            count++;
         }
 
         std::cout << "==========================" << std::endl;
@@ -269,7 +271,8 @@ class CircularLogger
         {
             if (entry.level == level)
             {
-                std::cout << "[" << count++ << "] " << entry.to_string() << std::endl;
+                std::cout << "[" << count << "] " << entry.to_string() << std::endl;
+                count++;
             }
         }
 
@@ -332,20 +335,19 @@ class SystemComponent
   private:
     CircularLogger& logger_;
     std::string     name_;
-    std::mt19937    rng_;
+    std::mt19937    rng_{std::random_device{}()};
 
   public:
     SystemComponent(CircularLogger& logger, std::string const& name)
         : logger_(logger)
         , name_(name)
-        , rng_(std::random_device{}())
     {
     }
 
     void simulate_operation()
     {
-        std::uniform_int_distribution<int> level_dist(0, 4);
-        std::uniform_int_distribution<int> delay_dist(100, 1'000);
+        std::uniform_int_distribution level_dist(0, 4);
+        std::uniform_int_distribution delay_dist(100, 1'000);
 
         // Simulate different types of log messages
         std::vector<std::string> messages = {
@@ -361,20 +363,10 @@ class SystemComponent
             "Info: User action logged"
         };
 
-        LogEntry::Level levels[] = {
-            LogEntry::Level::INFO,
-            LogEntry::Level::INFO,
-            LogEntry::Level::INFO,
-            LogEntry::Level::DEBUG,
-            LogEntry::Level::INFO,
-            LogEntry::Level::WARNING,
-            LogEntry::Level::ERROR,
-            LogEntry::Level::CRITICAL,
-            LogEntry::Level::DEBUG,
-            LogEntry::Level::INFO
-        };
+        using enum LogEntry::Level;
+        auto levels = std::vector{INFO, INFO, INFO, DEBUG, INFO, WARNING, ERROR, CRITICAL, DEBUG, INFO};
 
-        int             message_index = rng_() % messages.size();
+        int             message_index = rng_() % static_cast<int>(messages.size());
         LogEntry::Level level         = levels[message_index];
         std::string     message       = messages[message_index];
 
@@ -452,7 +444,7 @@ int main()
 
         for (int i = 0; i < 15; ++i)
         {
-            logger.info("Log entry " + std::to_string(i), "Test");
+            logger.info(std::format("Log entry {}", std::to_string(i)), "Test");
             if (i == 5)
             {
                 std::cout << "Buffer status after 5 entries:" << std::endl;

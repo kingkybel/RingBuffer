@@ -47,12 +47,11 @@ struct DataPacket
 {
     int                                   id;
     double                                value;
-    std::chrono::steady_clock::time_point timestamp;
+    std::chrono::steady_clock::time_point timestamp{std::chrono::steady_clock::now()};
 
-    DataPacket(int id = 0, double value = 0.0)
+    explicit DataPacket(int id = 0, double value = 0.0)
         : id(id)
         , value(value)
-        , timestamp(std::chrono::steady_clock::now())
     {
     }
 };
@@ -65,40 +64,35 @@ class ProducerConsumerExample
     static constexpr int    NUM_CONSUMERS      = 2;
     static constexpr int    ITEMS_PER_PRODUCER = 1'000;
 
-    ring_buffer_thread_safe<DataPacket> buffer_;
+    ring_buffer_thread_safe<DataPacket> buffer_{BUFFER_CAPACITY};
     std::atomic<bool>                   stop_flag_{false};
     std::atomic<int>                    total_produced_{0};
     std::atomic<int>                    total_consumed_{0};
     std::atomic<long long>              processing_time_ns_{0};
 
   public:
-    ProducerConsumerExample()
-        : buffer_(BUFFER_CAPACITY)
-    {
-    }
+    ProducerConsumerExample() = default;
 
     /**
      * @brief Producer function that generates data packets
      */
     void producer(int producer_id)
     {
-        std::random_device                     rd;
-        std::mt19937                           gen(rd() + producer_id);
-        std::uniform_real_distribution<double> value_dist(0.0, 100.0);
-        std::uniform_int_distribution<int>     delay_dist(1, 10);
+        std::random_device             rd;
+        std::mt19937                   gen(rd() + producer_id);
+        std::uniform_real_distribution value_dist(0.0, 100.0);
+        std::uniform_int_distribution  delay_dist(1, 10);
 
-        for (int i = 0; i < ITEMS_PER_PRODUCER; ++i)
+        int produced_count = 0;
+        while (produced_count < ITEMS_PER_PRODUCER)
         {
-            // Generate data packet
-            int        packet_id = producer_id * ITEMS_PER_PRODUCER + i;
-            double     value     = value_dist(gen);
-            DataPacket packet(packet_id, value);
+            int    packet_id = producer_id * ITEMS_PER_PRODUCER + produced_count;
+            double value     = value_dist(gen);
 
-            // Try to add to buffer with timeout
-            bool added = buffer_.push_back_with_timeout(packet, std::chrono::milliseconds(100));
-
-            if (added)
+            if (DataPacket packet(packet_id, value);
+                buffer_.push_back_with_timeout(packet, std::chrono::milliseconds(100)))
             {
+                produced_count++;
                 total_produced_++;
                 if (total_produced_ % 200 == 0)
                 {
@@ -109,10 +103,8 @@ class ProducerConsumerExample
             else
             {
                 std::cout << "Producer " << producer_id << " timeout - buffer full!" << std::endl;
-                i--; // Retry this item
             }
 
-            // Simulate variable production time
             std::this_thread::sleep_for(std::chrono::microseconds(delay_dist(gen) * 100));
         }
 
@@ -124,9 +116,9 @@ class ProducerConsumerExample
      */
     void consumer(int consumer_id)
     {
-        std::random_device                 rd;
-        std::mt19937                       gen(rd() + consumer_id + 100);
-        std::uniform_int_distribution<int> delay_dist(1, 5);
+        std::random_device            rd;
+        std::mt19937                  gen(rd() + consumer_id + 100);
+        std::uniform_int_distribution delay_dist(1, 5);
 
         while (!stop_flag_)
         {
@@ -173,7 +165,7 @@ class ProducerConsumerExample
     /**
      * @brief Monitor buffer status and system performance
      */
-    void monitor_system()
+    void monitor_system() const
     {
         auto const start_time = std::chrono::steady_clock::now();
 
@@ -184,7 +176,7 @@ class ProducerConsumerExample
 
             size_t buffer_size     = buffer_.size();
             size_t buffer_capacity = buffer_.capacity();
-            float  utilization     = static_cast<float>(buffer_size) / buffer_capacity * 100.0f;
+            float  utilization     = static_cast<float>(buffer_size) / static_cast<float>(buffer_capacity) * 100.0f;
 
             int produced  = total_produced_.load();
             int consumed  = total_consumed_.load();
@@ -211,8 +203,8 @@ class ProducerConsumerExample
         std::cout << "Total Items: " << NUM_PRODUCERS * ITEMS_PER_PRODUCER << std::endl;
         std::cout << "=================================================" << std::endl;
 
-        std::vector<std::thread> producers;
-        std::vector<std::thread> consumers;
+        std::vector<std::jthread> producers;
+        std::vector<std::jthread> consumers;
 
         auto start_time = std::chrono::steady_clock::now();
 
@@ -231,7 +223,7 @@ class ProducerConsumerExample
         }
 
         // Start monitoring thread
-        std::thread monitor_thread(&ProducerConsumerExample::monitor_system, this);
+        std::jthread monitor_thread(&ProducerConsumerExample::monitor_system, this);
 
         // Wait for all producers to finish
         std::cout << "\nWaiting for producers to complete..." << std::endl;
@@ -261,8 +253,8 @@ class ProducerConsumerExample
         auto total_time = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
 
         // Calculate statistics
-        long long avg_processing_time = processing_time_ns_.load() / total_consumed_.load();
-        double    throughput          = static_cast<double>(total_consumed_.load()) / total_time.count();
+        auto avg_processing_time = processing_time_ns_.load() / total_consumed_.load();
+        auto throughput = static_cast<double>(total_consumed_.load()) / static_cast<double>(total_time.count());
 
         std::cout << "\n=== Simulation Results ===" << std::endl;
         std::cout << "Total time: " << total_time.count() << " seconds" << std::endl;
@@ -282,42 +274,10 @@ class ProducerConsumerExample
     }
 };
 
-/**
- * @brief Demonstrate priority-based producer-consumer
- */
-void demonstrate_priority_processing()
+struct priority_processor
 {
-    std::cout << "\n=== Priority-Based Processing Example ===" << std::endl;
-
-    ring_buffer_thread_safe<DataPacket> priority_buffer(100);
-    std::atomic<bool>                   priority_stop{false};
-    std::atomic<int>                    high_priority_count{0};
-    std::atomic<int>                    low_priority_count{0};
-
-    // High priority producer
-    std::thread high_priority_producer([&]() {
-        for (int i = 0; i < 50; ++i)
-        {
-            DataPacket packet(i, 999.0); // High priority value
-            priority_buffer.push_back(packet);
-            high_priority_count++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-    });
-
-    // Low priority producer
-    std::thread low_priority_producer([&]() {
-        for (int i = 0; i < 50; ++i)
-        {
-            DataPacket packet(i + 1'000, 1.0); // Low priority value
-            priority_buffer.push_back(packet);
-            low_priority_count++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        }
-    });
-
-    // Consumer that prioritizes high-value items
-    std::thread priority_consumer([&]() {
+    void operator()(ring_buffer_thread_safe<DataPacket>& priority_buffer) const
+    {
         int processed_high = 0;
         int processed_low  = 0;
 
@@ -345,7 +305,44 @@ void demonstrate_priority_processing()
 
         std::cout << "Priority consumer processed: " << processed_high << " high-priority, " << processed_low
                   << " low-priority" << std::endl;
+    }
+};
+
+/**
+ * @brief Demonstrate priority-based producer-consumer
+ */
+void demonstrate_priority_processing()
+{
+    std::cout << "\n=== Priority-Based Processing Example ===" << std::endl;
+
+    ring_buffer_thread_safe<DataPacket> priority_buffer(100);
+    std::atomic<int>                    high_priority_count{0};
+    std::atomic<int>                    low_priority_count{0};
+
+    // High priority producer
+    std::jthread high_priority_producer([&priority_buffer, &high_priority_count]() {
+        for (int i = 0; i < 50; ++i)
+        {
+            DataPacket packet(i, 999.0); // High priority value
+            priority_buffer.push_back(packet);
+            high_priority_count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
     });
+
+    // Low priority producer
+    std::jthread low_priority_producer([&priority_buffer, &low_priority_count]() {
+        for (int i = 0; i < 50; ++i)
+        {
+            DataPacket packet(i + 1'000, 1.0); // Low priority value
+            priority_buffer.push_back(packet);
+            low_priority_count++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+    });
+
+    // Consumer that prioritizes high-value items
+    std::jthread priority_consumer(priority_processor(), std::ref(priority_buffer));
 
     high_priority_producer.join();
     low_priority_producer.join();

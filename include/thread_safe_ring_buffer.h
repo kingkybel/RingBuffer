@@ -159,15 +159,12 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer_
     template <typename Rep, typename Period>
     bool push_back_with_timeout(T const& item, std::chrono::duration<Rep, Period> const& timeout)
     {
-        std::unique_lock lock(mutex_);
 
         // Wait for space to become available
-        if (buffer_.full())
+        if (std::unique_lock lock(mutex_);
+            buffer_.full() && !not_full_.wait_for(lock, timeout, [this] { return !buffer_.full(); }))
         {
-            if (!not_full_.wait_for(lock, timeout, [this] { return !buffer_.full(); }))
-            {
-                return false; // Timeout occurred
-            }
+            return false; // Timeout occurred
         }
 
         buffer_.push_back(item);
@@ -185,15 +182,12 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer_
     template <typename Rep, typename Period>
     bool push_back_with_timeout(T&& item, std::chrono::duration<Rep, Period> const& timeout)
     {
-        std::unique_lock lock(mutex_);
 
         // Wait for space to become available
-        if (buffer_.full())
+        if (std::unique_lock lock(mutex_);
+            buffer_.full() && !not_full_.wait_for(lock, timeout, [this] { return !buffer_.full(); }))
         {
-            if (!not_full_.wait_for(lock, timeout, [this] { return !buffer_.full(); }))
-            {
-                return false; // Timeout occurred
-            }
+            return false; // Timeout occurred
         }
 
         buffer_.push_back(std::move(item));
@@ -241,15 +235,12 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer_
     template <typename Rep, typename Period>
     std::optional<T> pop_front_with_timeout(std::chrono::duration<Rep, Period> const& timeout)
     {
-        std::unique_lock<std::mutex> lock(mutex_);
 
         // Wait for an element to become available
-        if (buffer_.empty())
+    if (std::unique_lock lock(mutex_);
+            buffer_.empty() && !not_empty_.wait_for(lock, timeout, [this] { return !buffer_.empty(); }))
         {
-            if (!not_empty_.wait_for(lock, timeout, [this] { return !buffer_.empty(); }))
-            {
-                return std::nullopt; // Timeout occurred
-            }
+            return std::nullopt; // Timeout occurred
         }
 
         T item = buffer_.pop_front();
