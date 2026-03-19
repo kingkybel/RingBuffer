@@ -388,8 +388,8 @@ TEST(ThreadSafeRingBufferTest, ConcurrentClear)
         buffer.push_back(i);
     }
 
-    std::atomic<bool> stop_flag{false};
-    std::atomic<int>  clear_count{0};
+    std::atomic stop_flag{false};
+    std::atomic clear_count{0};
 
     // Thread that continuously clears the buffer
     std::jthread clear_thread([&buffer, &clear_count, &stop_flag]() {
