@@ -34,10 +34,9 @@ cmake --build .
 This configures the project into `build/`, compiles the library, the unit tests, benchmarks, and the example binaries.
 
 ## Building and Testing
-- Run the full test suite (both the core and thread-safe ring buffer tests):
+- Run the full test suite (both the core and thread-safe ring buffer tests are linked into `run_tests`):
 ```bash
-cmake --build build --target ringbuffer_test
-cmake --build build --target thread_safe_ring_buffer_tests
+cmake --build build --target run_tests
 ctest --output-on-failure -C Release
 ```
 - You can inspect the generated executables under `build/test/` after the build completes.
@@ -45,8 +44,8 @@ ctest --output-on-failure -C Release
 ## Running Benchmarks
 The dedicated benchmark target exercises push/pop, iterator traversal, and emplace workloads on different buffer sizes.
 ```bash
-cmake --build build --target ringbuffer_benchmark
-./build/benchmarks/ringbuffer_benchmark
+cmake --build build --target benchmark_ring_buffer
+./build/benchmarks/benchmark_ring_buffer
 ```
 Feel free to adjust compiler flags, buffer capacities, or iteration counts inside `benchmarks/benchmark_ring_buffer.cc` before rebuilding the target.
 
@@ -55,6 +54,11 @@ Feel free to adjust compiler flags, buffer capacities, or iteration counts insid
 ```bash
 cmake --build build --target producer_consumer_example
 ./build/examples/producer_consumer_example
+```
+- **Embedded static allocator**: `examples/embedded_static_allocator_example.cc` shows how to wrap `ring_buffer` with a tiny allocator that points at pre-allocated storage so no heap calls are performed during runtime. Build and run it the same way:
+```bash
+cmake --build build --target embedded_static_allocator_example
+./build/examples/embedded_static_allocator_example
 ```
 - **Thread-safe API Usage**: Look inside `include/thread_safe_ring_buffer.h` for blocking, try/push, and timeout helpers. The tests exercise the same API so you can copy the patterns.
 

@@ -105,14 +105,9 @@ template <typename T> class BenchmarkSuite
         {
             for (size_t j = 0; j < buffer.size(); ++j)
             {
-<<<<<<< HEAD
-                int volatile value = buffer[j];// NOSONAR S3687: volatile forces a real memory read so the compiler cannot remove this access.
-                
-=======
                 int volatile value = buffer[j]; // NOSONAR S3687: volatile forces a real memory read so the compiler
                                                 // cannot remove this access.
 
->>>>>>> 0988cbb (Addressed Sonar-smells.)
                 (void)value;
             }
         }
@@ -124,14 +119,9 @@ template <typename T> class BenchmarkSuite
         {
             for (size_t j = 0; j < buffer.size(); ++j)
             {
-<<<<<<< HEAD
-                int volatile value = buffer[j];// NOSONAR S3687: volatile forces a real memory read so the compiler cannot remove this access.
-                
-=======
                 int volatile value = buffer[j]; // NOSONAR S3687: volatile forces a real memory read so the compiler
                                                 // cannot remove this access.
 
->>>>>>> 0988cbb (Addressed Sonar-smells.)
                 (void)value;
             }
         }
@@ -164,14 +154,9 @@ template <typename T> class BenchmarkSuite
         {
             for (auto const& value: buffer)
             {
-<<<<<<< HEAD
-                int volatile v = value;// NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
-                
-=======
                 int volatile v =
                     value; // NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
 
->>>>>>> 0988cbb (Addressed Sonar-smells.)
                 (void)v;
             }
         }
@@ -183,13 +168,9 @@ template <typename T> class BenchmarkSuite
         {
             for (auto const& value: buffer)
             {
-<<<<<<< HEAD
-                int volatile v = value;// NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
-                
-=======
-                // NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
-                int volatile v = value;
->>>>>>> 0988cbb (Addressed Sonar-smells.)
+
+                int volatile v =
+                    value; // NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
                 (void)v;
             }
         }
@@ -281,17 +262,10 @@ template <typename T> class ThreadSafetyBenchmark
     {
         std::cout << "Benchmarking producer-consumer scenario..." << std::endl;
 
-<<<<<<< HEAD
-        T                   buffer(BUFFER_CAPACITY);
-        std::atomic<bool>   stop_flag{false};
-        std::atomic<size_t> produced{0};
-        std::atomic<size_t> consumed{0};
-=======
         T           buffer(BUFFER_CAPACITY);
         std::atomic stop_flag{false};
         std::atomic produced{0UL};
         std::atomic consumed{0UL};
->>>>>>> 0988cbb (Addressed Sonar-smells.)
 
         // Producer function
         auto producer = [&buffer, &produced]() {
@@ -344,15 +318,9 @@ template <typename T> class ThreadSafetyBenchmark
         int const num_threads = 4;
         T         buffer(BUFFER_CAPACITY * num_threads);
 
-<<<<<<< HEAD
-        std::atomic<bool>   stop_flag{false};
-        std::atomic<size_t> total_produced{0};
-        std::atomic<size_t> total_consumed{0};
-=======
         std::atomic stop_flag{false};
         std::atomic total_produced{0UL};
         std::atomic total_consumed{0UL};
->>>>>>> 0988cbb (Addressed Sonar-smells.)
 
         std::vector<std::thread> producers;
         std::vector<std::thread> consumers;

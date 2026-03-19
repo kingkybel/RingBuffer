@@ -670,20 +670,6 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
         return const_iterator(this, count_);
     }
 
-    /**
-     * @brief Debug method to print buffer contents (for debugging only)
-     */
-    void debug_print() const
-    {
-        std::cout << "Buffer contents: ";
-        for (size_type i = 0; i < capacity_; ++i)
-        {
-            std::cout << buffer_[i] << " ";
-        }
-        std::cout << " | head=" << head_ << " tail=" << tail_ << " count=" << count_ << " full=" << full_
-                  << " just_overwrote=" << just_overwrote_ << std::endl;
-    }
-
   private:
     /**
      * @brief Increment the head index, wrapping around if necessary

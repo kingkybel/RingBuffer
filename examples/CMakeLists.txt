@@ -25,3 +25,4 @@
 add_executable(audio_buffer_example audio_buffer_example.cc)
 add_executable(logging_example logging_example.cc)
 add_executable(producer_consumer_example producer_consumer_example.cc)
+add_executable(embedded_static_allocator_example embedded_static_allocator_example.cc)
