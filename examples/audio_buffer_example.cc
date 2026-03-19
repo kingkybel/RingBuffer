@@ -24,9 +24,12 @@
  */
 
 #include <chrono>
+#include <format>
 #include <iomanip>
 #include <iostream>
+#include <numbers>
 #include <random>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -34,6 +37,16 @@
 #include "ring_buffer.h"
 
 using namespace dkyb;
+
+namespace
+{
+template <typename... Args>
+void format_line(std::ostream& out, std::format_string<Args...> fmt, Args&&... args)
+{
+    out << std::format(fmt, std::forward<Args>(args)...);
+    out << '\n';
+}
+} // namespace
 
 /**
  * @brief Audio buffer example demonstrating real-time audio processing
@@ -170,20 +183,20 @@ class AudioBufferExample
         size_t const capacity     = audio_buffer_.capacity();
         float const  utilization  = static_cast<float>(current_size) / static_cast<float>(capacity) * 100.0f;
 
-        std::println(std::cout, "Audio Buffer Status: {}/{} ({}%)", current_size, capacity, utilization);
+        format_line(std::cout, "Audio Buffer Status: {}/{} ({}%)", current_size, capacity, utilization);
         if (utilization > 90.0f)
         {
-            std::println(std::cout, " ⚠️  WARNING: Buffer nearly full!");
+            format_line(std::cout, " ⚠️  WARNING: Buffer nearly full!");
         }
         else if (utilization < 10.0f)
         {
-            std::println(std::cout, " ⚠️  WARNING: Buffer nearly empty!");
+            format_line(std::cout, " ⚠️  WARNING: Buffer nearly empty!");
         }
         else
         {
-            std::println(std::cout, " ✓");
+            format_line(std::cout, " ✓");
         }
-        std::println(std::cout, "");
+        format_line(std::cout, "");
     }
 
     /**
@@ -191,17 +204,17 @@ class AudioBufferExample
      */
     void run_simulation()
     {
-        std::println(std::cout, "=== Audio Buffer Simulation ===");
-        std::println(std::cout, "Buffer Size:{} samples", BUFFER_SIZE);
-        std::println(std::cout, "Sample Rate: {} Hz", SAMPLE_RATE);
-        std::println(std::cout, "Chunk Size: {} samples", CHUNK_SIZE);
-        std::println(std::cout, "===============================");
+        format_line(std::cout, "=== Audio Buffer Simulation ===");
+        format_line(std::cout, "Buffer Size:{} samples", BUFFER_SIZE);
+        format_line(std::cout, "Sample Rate: {} Hz", SAMPLE_RATE);
+        format_line(std::cout, "Chunk Size: {} samples", CHUNK_SIZE);
+        format_line(std::cout, "===============================");
 
         int const simulation_steps = 20;
 
         for (int step = 0; step < simulation_steps; ++step)
         {
-            std::println(std::cout, "\nStep {}/{}:", step + 1, simulation_steps);
+            format_line(std::cout, "\nStep {}/{}:", step + 1, simulation_steps);
 
             // Simulate variable load by sometimes generating more/less audio
             int generation_factor = 1;
@@ -241,8 +254,8 @@ class AudioBufferExample
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        std::println(std::cout, "\n=== Simulation Complete ===");
-        std::println(std::cout, "Final buffer state: {}/{}", audio_buffer_.size(), audio_buffer_.capacity());
+        format_line(std::cout, "\n=== Simulation Complete ===");
+        format_line(std::cout, "Final buffer state: {}/{}", audio_buffer_.size(), audio_buffer_.capacity());
     }
 };
 
@@ -251,7 +264,7 @@ class AudioBufferExample
  */
 void demonstrate_audio_analysis()
 {
-    std::println(std::cout, "\n=== Audio Analysis Example ===");
+    format_line(std::cout, "\n=== Audio Analysis Example ===");
 
     ring_buffer<float> analysis_buffer(256);
 
@@ -285,7 +298,7 @@ void demonstrate_audio_analysis()
             float       variance = (sum_sq / static_cast<float>(count)) - (mean * mean);
             float const rms      = std::sqrt(std::max(0.0f, variance));
 
-            std::println(
+            format_line(
                 std::cout,
                 "Analysis Window {}: Mean={}, RMS={}, Buffer={}",
                 i + 1,
@@ -301,8 +314,8 @@ void demonstrate_audio_analysis()
 
 int main()
 {
-    std::println(std::cout, "Ring Buffer Audio Processing Examples");
-    std::println(std::cout, "=====================================");
+    format_line(std::cout, "Ring Buffer Audio Processing Examples");
+    format_line(std::cout, "=====================================");
 
     try
     {
@@ -313,12 +326,12 @@ int main()
         // Demonstrate audio analysis
         demonstrate_audio_analysis();
 
-        std::println(std::cout, "\n=====================================");
-        std::println(std::cout, "Audio examples completed successfully!");
+        format_line(std::cout, "\n=====================================");
+        format_line(std::cout, "Audio examples completed successfully!");
     }
     catch (std::exception const& e)
     {
-        std::println(std::cerr, "Error: {}", e.what());
+        format_line(std::cerr, "Error: {}", e.what());
         return 1;
     }
 
