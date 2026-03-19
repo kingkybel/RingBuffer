@@ -39,7 +39,7 @@
 #include "thread_safe_ring_buffer.h"
 
 // #define DO_TRACE_
-#include <traceutil.h>
+#include <dkyb/traceutil.h>
 
 using namespace dkyb;
 
