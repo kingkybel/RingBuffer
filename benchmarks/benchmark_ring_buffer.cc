@@ -154,8 +154,8 @@ template <typename T> class BenchmarkSuite
         {
             for (auto const& value: buffer)
             {
-                int volatile v =
-                    value; // NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
+                int volatile v = value; // NOSONAR S3687: volatile prevents the optimizer from eliding the
+                                        // iterator access.
 
                 (void)v;
             }
@@ -168,9 +168,8 @@ template <typename T> class BenchmarkSuite
         {
             for (auto const& value: buffer)
             {
-
-                int volatile v =
-                    value; // NOSONAR S3687: volatile prevents the optimizer from eliding the iterator access.
+                int volatile v = value; // NOSONAR S3687: volatile prevents the optimizer from eliding the
+                                        // iterator access.
                 (void)v;
             }
         }

@@ -38,7 +38,7 @@
 // Include the thread-safe ring buffer implementation
 #include "thread_safe_ring_buffer.h"
 
-// #define DO_TRACE_
+// #define DO_TRACE_ // NOSONAR
 #include <dkyb/traceutil.h>
 
 using namespace dkyb;
@@ -351,7 +351,7 @@ TEST(ThreadSafeRingBufferTest, EmplaceFunctionality)
     std::string temp = "world";
     buffer.emplace_back(std::move(temp));
     EXPECT_EQ(buffer.back(), "world");
-    EXPECT_TRUE(temp.empty()); // Original should be moved from
+    EXPECT_TRUE(temp.empty()); // NOLINT(bugprone-use-after-move) // Original should be moved from
     EXPECT_EQ(buffer.size(), 3);
 }
 

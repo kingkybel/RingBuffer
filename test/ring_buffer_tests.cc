@@ -104,7 +104,7 @@ TEST(RingBufferTest, CopyAndMoveSemantics)
     EXPECT_EQ(moved.size(), 2);
     EXPECT_EQ(moved.front(), "hello");
     EXPECT_EQ(moved.back(), "world");
-    EXPECT_EQ(copy.size(), 0); // Original should be empty after move
+    EXPECT_EQ(copy.size(), 0); // NOLINT(bugprone-use-after-move) // Original should be empty after move
 
     // Test copy assignment
     ring_buffer<std::string> buffer1(3);
@@ -131,7 +131,7 @@ TEST(RingBufferTest, CopyAndMoveSemantics)
     EXPECT_EQ(buffer3.size(), 2);
     EXPECT_EQ(buffer3.front(), "test5");
     EXPECT_EQ(buffer3.back(), "test6");
-    EXPECT_EQ(buffer4.size(), 0); // Original should be empty after move
+    EXPECT_EQ(buffer4.size(), 0); // NOLINT(bugprone-use-after-move) // Original should be empty after move
 }
 
 TEST(RingBufferTest, IteratorFunctionality)
@@ -191,7 +191,7 @@ TEST(RingBufferTest, EmplaceFunctionality)
     std::string temp = "world";
     buffer.emplace_back(std::move(temp));
     EXPECT_EQ(buffer.back(), "world");
-    EXPECT_TRUE(temp.empty()); // Original should be moved from
+    EXPECT_TRUE(temp.empty()); // NOLINT(bugprone-use-after-move) // Original should be moved from
     EXPECT_EQ(buffer.size(), 3);
 }
 

@@ -238,13 +238,13 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
      */
     ring_buffer(ring_buffer&& other) noexcept
         : capacity_(other.capacity_)
-        , allocator_(std::move(other.allocator_))
         , buffer_(other.buffer_)
         , head_(other.head_)
         , tail_(other.tail_)
         , count_(other.count_)
         , full_(other.full_)
         , just_overwrote_(false)
+        , allocator_(std::move(other.allocator_))
     {
 
         other.buffer_   = nullptr;
@@ -313,12 +313,12 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
 
             // Move resources
             capacity_  = other.capacity_;
-            allocator_ = std::move(other.allocator_);
             buffer_    = other.buffer_;
             head_      = other.head_;
             tail_      = other.tail_;
             count_     = other.count_;
             full_      = other.full_;
+            allocator_ = std::move(other.allocator_);
 
             // Reset other
             other.buffer_   = nullptr;
@@ -724,15 +724,15 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer
         return index == 0 ? capacity_ - 1 : index - 1;
     }
 
-    size_type capacity_{};
-    Allocator allocator_{};
-    pointer   buffer_{};
-    size_type head_{};
-    size_type tail_{};
-    size_type count_{};
-    bool      full_{};
-    bool      just_overwrote_{};
-    size_type overwrite_position_{};
+    size_type                       capacity_{};
+    [[no_unique_address]] Allocator allocator_{};
+    pointer                         buffer_{};
+    size_type                       head_{};
+    size_type                       tail_{};
+    size_type                       count_{};
+    bool                            full_{};
+    bool                            just_overwrote_{};
+    size_type                       overwrite_position_{};
 };
 
 } // namespace dkyb

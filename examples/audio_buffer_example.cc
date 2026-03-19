@@ -40,8 +40,7 @@ using namespace dkyb;
 
 namespace
 {
-template <typename... Args>
-void format_line(std::ostream& out, std::format_string<Args...> fmt, Args&&... args)
+template <typename... Args> void format_line(std::ostream& out, std::format_string<Args...> fmt, Args&&... args)
 {
     out << std::format(fmt, std::forward<Args>(args)...);
     out << '\n';

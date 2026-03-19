@@ -237,7 +237,7 @@ template <typename T, typename Allocator = std::allocator<T>> class ring_buffer_
     {
 
         // Wait for an element to become available
-    if (std::unique_lock lock(mutex_);
+        if (std::unique_lock lock(mutex_);
             buffer_.empty() && !not_empty_.wait_for(lock, timeout, [this] { return !buffer_.empty(); }))
         {
             return std::nullopt; // Timeout occurred

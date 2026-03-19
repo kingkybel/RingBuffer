@@ -24,6 +24,7 @@
  */
 
 #include <atomic>
+#include <ctime>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -38,6 +39,20 @@
 #include "ring_buffer.h"
 
 using namespace dkyb;
+
+namespace
+{
+inline std::tm make_thread_safe_localtime(std::time_t time)
+{
+    std::tm result{};
+#if defined(_MSC_VER) || defined(__MINGW32__)
+    (void)localtime_s(&result, &time);
+#else
+    localtime_r(&time, &result);
+#endif
+    return result;
+}
+}
 
 /**
  * @brief Log entry structure for the circular logging system
@@ -92,8 +107,10 @@ struct LogEntry
             std::chrono::time_point<std::chrono::system_clock>(time_point.time_since_epoch())
         );
 
+        std::tm local_time = make_thread_safe_localtime(time_t);
+
         std::ostringstream oss;
-        oss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S") << " [" << level_to_string() << "]";
+        oss << std::put_time(&local_time, "%Y-%m-%d %H:%M:%S") << " [" << level_to_string() << "]";
         if (!source.empty())
         {
             oss << " [" << source << "]";
