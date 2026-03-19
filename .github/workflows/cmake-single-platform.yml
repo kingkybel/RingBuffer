@@ -167,8 +167,8 @@ jobs:
 
     - name: Create coverage report
       run: |
-        lcov --capture           --ignore-errors mismatch,unused,empty           --directory "${{github.workspace}}/${{env.BUILD_DIR}}"           --output-file coverage.info           --rc branch_coverage=1           --rc geninfo_unexecuted_blocks=1
-        lcov --remove coverage.info           --ignore-errors mismatch,unused,empty           "/usr/*"           "${{github.workspace}}/test/*"           "${{github.workspace}}/DebugTrace/*"           "${{github.workspace}}/TypeTraits/*"           "${{github.workspace}}/ContainerConvert/*"           "*/_deps/*"           --output-file coverage.filtered.info           --rc branch_coverage=1           --rc geninfo_unexecuted_blocks=1
+        lcov --capture --ignore-errors mismatch,unused,empty --directory "${{github.workspace}}/${{env.BUILD_DIR}}" --output-file coverage.info --rc branch_coverage=1 --rc geninfo_unexecuted_blocks=1
+        lcov --remove coverage.info --ignore-errors mismatch,unused,empty "/usr/*" "${{github.workspace}}/test/*" "${{github.workspace}}/DebugTrace/*" "${{github.workspace}}/ContainerConvert/*"           "*/_deps/*"           --output-file coverage.filtered.info           --rc branch_coverage=1 --rc geninfo_unexecuted_blocks=1
         genhtml coverage.filtered.info --branch-coverage --ignore-errors source --output-directory coverage-html
         lcov --summary coverage.filtered.info --ignore-errors mismatch,unused,empty --rc branch_coverage=1 --rc geninfo_unexecuted_blocks=1 | tee coverage-summary.txt
 
@@ -252,14 +252,6 @@ jobs:
         run: |
           mkdir -p ${{github.workspace}}/DebugTrace/build
           cd ${{github.workspace}}/DebugTrace/build
-          cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/usr -S ..
-          cmake --build . --parallel $(nproc)
-          sudo cmake --install .
-
-      - name: Install TypeTraits
-        run: |
-          mkdir -p ${{github.workspace}}/TypeTraits/build
-          cd ${{github.workspace}}/TypeTraits/build
           cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/usr -S ..
           cmake --build . --parallel $(nproc)
           sudo cmake --install .
