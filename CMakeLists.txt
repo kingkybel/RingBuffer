@@ -59,8 +59,6 @@ link_directories(
         system
 )
 
-
-add_subdirectory(DebugTrace)
 add_subdirectory(test)
 add_subdirectory(examples)
 add_subdirectory(benchmarks)

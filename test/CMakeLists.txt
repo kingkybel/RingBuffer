@@ -27,19 +27,6 @@ cmake_minimum_required(VERSION 3.26)
 include(CTest)
 include(FetchContent)
 
-# Prefer system-installed GTest but fall back to FetchContent so CI can build.
-find_package(GTest QUIET)
-
-if(NOT TARGET GTest::gtest)
-    message(STATUS "Fetching GoogleTest for test build")
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.15.0
-    )
-    FetchContent_MakeAvailable(googletest)
-endif()
-
 # Create the test executable
 add_executable(run_tests
     ring_buffer_tests.cc
@@ -48,9 +35,8 @@ add_executable(run_tests
 
 # Link with GoogleTest and RingBuffer
 target_link_libraries(run_tests
-    GTest::gtest
-    GTest::gtest_main
-    DebugTrace
+    gtest
+    gtest_main
     pthread
 )
 
